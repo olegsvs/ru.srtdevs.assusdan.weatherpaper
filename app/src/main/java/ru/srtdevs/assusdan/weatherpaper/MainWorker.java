@@ -7,7 +7,6 @@ import android.graphics.BitmapFactory;
 import android.util.DisplayMetrics;
 
 import android.util.Log;
-import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
@@ -24,19 +23,23 @@ import javax.net.ssl.HttpsURLConnection;
 public class MainWorker {
 
     BackgroundService parent;
-
+    WeatherParser weather;
     public void showError(String err) {
         Log.e("ERROR!", err);
     }
 
     public String getPaperUrl() { //TODO add code
+
+        weather.getFolder("nugush");
+
         return "https://raw.githubusercontent.com/assusdan/weatherpaper_wallpaper_hub/master/dinner/clear/no/20/1.jpg";
     }
 
     public MainWorker (BackgroundService parent){
 
-        this.parent = parent;
 
+        this.parent = parent;
+        weather = new WeatherParser(this);
     }
 
     public void setPaper() throws Exception {

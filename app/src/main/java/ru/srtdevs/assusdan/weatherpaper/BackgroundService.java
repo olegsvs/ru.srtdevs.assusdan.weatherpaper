@@ -27,7 +27,7 @@ public class BackgroundService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        int tm = 10;
+        int tm = 20;
 
         try {
            while(true){
