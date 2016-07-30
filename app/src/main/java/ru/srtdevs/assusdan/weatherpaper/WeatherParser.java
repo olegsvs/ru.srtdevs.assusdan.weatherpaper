@@ -2,12 +2,20 @@ package ru.srtdevs.assusdan.weatherpaper;
 
 import android.content.Context;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.Charset;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -16,10 +24,10 @@ import javax.net.ssl.HttpsURLConnection;
  */
 public class WeatherParser {
 
-    String weatherToken = "YOUR TOKEN";
+    String weatherToken = "YOUR_TOKEN";
 
     MainWorker parent;
-    public String getFolder(String cityName){
+    public String getFolder(String cityName) throws  Exception{
         return parseWeather("http://api.openweathermap.org/data/2.5/weather?q="+cityName+"&appid="+weatherToken+"&units=metric");
     }
 
@@ -28,40 +36,34 @@ public class WeatherParser {
         this.parent=parent;
     }
 
-    public String parseWeather(String sUrl){
+    public String parseWeather(String sUrl) throws Exception{
+        StringBuffer buffer = new StringBuffer();
 
-        InputStream input = null;
-        HttpURLConnection connection = null;
+        InputStream is = null;
+        HttpURLConnection con = null;
         try {
             URL url = new URL(sUrl);
 
 
-            connection = (HttpURLConnection) url.openConnection();
-            connection.connect();
-            if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                return "error";
-            }
+            con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+            con.setDoInput(true);
+            con.setDoOutput(true);
+            con.connect();
 
-            input = connection.getInputStream();
+// Let's read the response
+            is = con.getInputStream();
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            String line = null;
+            while ( (line = br.readLine()) != null )
+                buffer.append(line + "rn");
 
-            try {
-
-                ByteArrayOutputStream out = new ByteArrayOutputStream();
-                byte[] buffer = new byte[1024];
-                while (true) {
-                    int r = input.read(buffer);
-                    if (r == -1) break;
-                    out.write(buffer, 0, r);
-                }
-
-                return parseJson(out.toString());
+            is.close();
+            con.disconnect();
 
 
-            } catch (Exception e) {
-                parent.showError(e.toString());
-                parent.showError(connection.getResponseMessage());
 
-            }
+
 
 
         } catch (Exception e) {
@@ -70,26 +72,50 @@ public class WeatherParser {
 
         } finally {
             try {
-                if (input != null)
-                    input.close();
+                if (is != null)
+                    is.close();
             } catch (IOException ignored) {
             }
 
-            if (connection != null)
-                connection.disconnect();
-            return parseJson("error!");
+            if (con != null)
+                con.disconnect();
 
         }
 
+        return parseJson(buffer.toString());
 
 
     }
 
-    public String parseJson(String sJson){
-        parent.showError(sJson);
+    public String parseJson(String strJson) throws Exception{
 
-        String folder = "";
-        //add code
+        parent.showError(strJson);
+
+        String folder = "/";
+
+        JSONObject dataJsonObj = null;
+
+        try {
+            dataJsonObj = new JSONObject(new JSONTokener(strJson));
+
+            Double temp = dataJsonObj.getJSONObject("main").getDouble("temp");
+
+            folder += dataJsonObj.getJSONArray("weather").getJSONObject(0)
+                    .getString("id").substring(0,2)
+                    + "/" + String.valueOf(temp - (temp % 10)) + "/";
+
+
+
+
+
+
+
+        } catch (JSONException e) {
+            parent.showError(e.toString());
+       }
+
+        parent.showError(folder);
+
         return folder;
     }
 }

@@ -9,12 +9,12 @@ import java.util.concurrent.TimeUnit;
 import android.app.IntentService;
 import android.content.Intent;
 import android.util.Log;
+import android.widget.Toast;
 
 public class BackgroundService extends IntentService {
 
     MainWorker worker;
-
-    public BackgroundService() {
+    public BackgroundService(SettingsActivity parent) {
         super("myname");
         worker = new MainWorker(this);
 
@@ -38,6 +38,7 @@ public class BackgroundService extends IntentService {
            }
 
         } catch (Exception e) {
+            e.printStackTrace();
             Log.e("SUSLOV_DEBUG",e.toString());
         }
     }
@@ -48,5 +49,9 @@ public class BackgroundService extends IntentService {
         super.onDestroy();
     }
 
+    public void showError(String err){
+       // Toast toast = Toast.makeText(getApplicationContext(), err, Toast.LENGTH_LONG);
+       // toast.show();
+    }
 }
 
