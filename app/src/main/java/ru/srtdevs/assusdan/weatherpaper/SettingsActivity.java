@@ -12,25 +12,30 @@ import android.widget.Toast;
 
 public class SettingsActivity extends AppCompatActivity {
     EditText editText = null;
+    Intent service = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
+        service = new Intent(this, BackgroundService.class);
 
         this.editText = (EditText)findViewById(R.id.editText);
     }
 
-    public void onBtnClick(View view) {
+    public void toStartService(View view) {
         try {
-
-            Intent service = new Intent(this, BackgroundService.class);
-            showError("Intent started 1");
-
             startService(service.putExtra("city", this.editText.getText().toString()));
+        } catch (Exception e) {
+            showError(e.toString());
+        }
+    }
 
 
+    public void toStopService(View view) {
+        try {
+            stopService(service.putExtra("city", this.editText.getText().toString()));
         } catch (Exception e) {
             showError(e.toString());
         }
