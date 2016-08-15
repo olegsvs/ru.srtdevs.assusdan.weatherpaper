@@ -28,14 +28,16 @@ public class MainWorker {
     BackgroundService parent;
     WeatherParser weather;
     public void showError(String err) {
-        Log.e("ERROR!", err);
+        parent.showError(err);
     }
 
-    public String getPaperUrl() throws Exception{ //TODO finish
+    public String getPaperUrl(String city) throws Exception{ //TODO finish
 
-        String folder = weather.getFolder("nugush");
+        String folder = weather.getFolder(city);
         String time = getTime();
-        parent.showError(folder+time);
+
+        // URL example: https://raw.githubusercontent.com/assusdan/weatherpaper_wallpaper_hub/master/day/80/20.0/1.jpg
+
         return "https://raw.githubusercontent.com/assusdan/weatherpaper_wallpaper_hub/master/"+time+folder+"1.jpg";
     }
 
@@ -43,12 +45,12 @@ public class MainWorker {
 
 
         this.parent = parent;
-        weather = new WeatherParser(this);
+        weather = new WeatherParser();
     }
 
-    public void setPaper() throws Exception {
+    public void setPaper(String city) throws Exception {
         Log.e("ALERT!", "Setting Paper...");
-        downloadPaper();
+        downloadPaper(city);
 
         Bitmap bMap = BitmapFactory.decodeFile(parent.getFilesDir() + "/paper.jpg");
         DisplayMetrics metrics = parent.getApplicationContext().getResources().getDisplayMetrics();
@@ -67,20 +69,19 @@ public class MainWorker {
             showError(e.toString());
         }
 
-        showError("Wallpapers changed");
+        Log.i("INFO","Wallpapers changed");
 
 
     }
-    public void downloadPaper() throws Exception {
-        String sUrl = getPaperUrl();
-        showError(sUrl);
+    public void downloadPaper(String city) throws Exception {
+        String sUrl = getPaperUrl(city);
+        Log.e("URL",sUrl);
         InputStream input = null;
         FileOutputStream outputStream = null;
         HttpURLConnection connection = null;
         URL url = new URL(sUrl);
 
-        try {
-
+            try {
             connection = (HttpsURLConnection) url.openConnection();
             connection.connect();
             if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
@@ -89,7 +90,7 @@ public class MainWorker {
 
             input = connection.getInputStream();
 
-            try {
+
 
                 outputStream = parent.openFileOutput("paper.jpg", Context.MODE_PRIVATE);
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -105,17 +106,9 @@ public class MainWorker {
 
 
             } catch (Exception e) {
-                showError(e.toString());
-                showError(connection.getResponseMessage());
+                Log.e("Fatal", "connection error at line 110");
 
-            }
-
-
-        } catch (Exception e) {
-
-            showError(e.toString());
-
-        } finally {
+            } finally {
             try {
                 if (outputStream != null)
                     outputStream.close();
@@ -134,7 +127,7 @@ public class MainWorker {
         SimpleDateFormat sdf = new SimpleDateFormat("HH");
         Integer hours = Integer.parseInt(sdf.format(new Date()));
 
-        showError(hours.toString());
+        Log.w("TIME",hours.toString());
 
         if ((hours>22)||(hours<07)){
             return "night";

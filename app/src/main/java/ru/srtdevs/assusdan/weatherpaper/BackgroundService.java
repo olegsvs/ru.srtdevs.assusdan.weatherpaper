@@ -14,11 +14,15 @@ import android.widget.Toast;
 public class BackgroundService extends IntentService {
 
     MainWorker worker;
-    public BackgroundService(SettingsActivity parent) {
+    public BackgroundService() {
         super("myname");
         worker = new MainWorker(this);
 
     }
+
+    public void showError (String e){
+        Toast toast = Toast.makeText(getApplicationContext(), e, Toast.LENGTH_LONG);
+        toast.show();    }
 
     public void onCreate() {
         super.onCreate();
@@ -30,9 +34,11 @@ public class BackgroundService extends IntentService {
         int tm = 20;
 
         try {
+            String city= intent.getExtras().getString("city");
+            Log.e("THE CITY IS ", city);
            while(true){
             Log.w("ALERT!","START OF SERVICE");
-            worker.setPaper();
+            worker.setPaper(city);
             TimeUnit.SECONDS.sleep(tm);
             worker.showError("END OF SERVICE");
            }
@@ -49,9 +55,6 @@ public class BackgroundService extends IntentService {
         super.onDestroy();
     }
 
-    public void showError(String err){
-       // Toast toast = Toast.makeText(getApplicationContext(), err, Toast.LENGTH_LONG);
-       // toast.show();
-    }
+
 }
 

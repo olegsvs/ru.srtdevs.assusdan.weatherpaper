@@ -1,39 +1,32 @@
 package ru.srtdevs.assusdan.weatherpaper;
 
-import android.content.Context;
+import android.util.Log;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.charset.Charset;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import javax.net.ssl.HttpsURLConnection;
 
 /**
  * Created by assusdan on 29.07.16.
  */
 public class WeatherParser {
 
-    String weatherToken = "YOUR_TOKEN";
+    String weatherToken = "YOUR TOKEN";
 
-    MainWorker parent;
     public String getFolder(String cityName) throws  Exception{
         return parseWeather("http://api.openweathermap.org/data/2.5/weather?q="+cityName+"&appid="+weatherToken+"&units=metric");
     }
 
 
-    public WeatherParser(MainWorker parent){
-        this.parent=parent;
+    public WeatherParser(){
     }
 
     public String parseWeather(String sUrl) throws Exception{
@@ -68,7 +61,7 @@ public class WeatherParser {
 
         } catch (Exception e) {
 
-            parent.showError(e.toString());
+            Log.e("Conn.error",e.toString());
 
         } finally {
             try {
@@ -89,9 +82,10 @@ public class WeatherParser {
 
     public String parseJson(String strJson) throws Exception{
 
-        parent.showError(strJson);
+        Log.e("RECIEVED JSON",strJson);
 
         String folder = "/";
+        String rescity = "";
 
         JSONObject dataJsonObj = null;
 
@@ -101,20 +95,17 @@ public class WeatherParser {
             Double temp = dataJsonObj.getJSONObject("main").getDouble("temp");
 
             folder += dataJsonObj.getJSONArray("weather").getJSONObject(0)
-                    .getString("id").substring(0,2)
+                    .getString("icon").substring(0,2)
                     + "/" + String.valueOf(temp - (temp % 10)) + "/";
 
-
-
-
-
+            rescity = dataJsonObj.getString("name");
 
 
         } catch (JSONException e) {
-            parent.showError(e.toString());
+            Log.e("ERROR" ,e.toString());
        }
 
-        parent.showError(folder);
+        Log.e("CITY 2 IS",rescity);
 
         return folder;
     }
