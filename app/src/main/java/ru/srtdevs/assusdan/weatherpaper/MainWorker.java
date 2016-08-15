@@ -4,13 +4,16 @@ import android.app.WallpaperManager;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.provider.MediaStore;
 import android.util.DisplayMetrics;
 
 import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.File;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -25,6 +28,8 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class MainWorker {
 
+    String filename = "";
+    String dir = "";
     BackgroundService parent;
     WeatherParser weather;
     public void showError(String err) {
@@ -32,13 +37,13 @@ public class MainWorker {
     }
 
     public String getPaperUrl(String city) throws Exception{ //TODO finish
+        dir =  getTime() + weather.getFolder(city);
+        filename =dir + "1.jpg";
 
-        String folder = weather.getFolder(city);
-        String time = getTime();
 
         // URL example: https://raw.githubusercontent.com/assusdan/weatherpaper_wallpaper_hub/master/day/80/20.0/1.jpg
 
-        return "https://raw.githubusercontent.com/assusdan/weatherpaper_wallpaper_hub/master/"+time+folder+"1.jpg";
+        return "https://raw.githubusercontent.com/assusdan/weatherpaper_wallpaper_hub/master/"+filename;
     }
 
     public MainWorker (BackgroundService parent){
@@ -52,7 +57,9 @@ public class MainWorker {
         Log.e("ALERT!", "Setting Paper...");
         downloadPaper(city);
 
-        Bitmap bMap = BitmapFactory.decodeFile(parent.getFilesDir() + "/paper.jpg");
+        Log.e("FILENAME", parent.getFilesDir() + "/" + filename);
+
+        Bitmap bMap = BitmapFactory.decodeFile(parent.getFilesDir() + "/" + filename);
         DisplayMetrics metrics = parent.getApplicationContext().getResources().getDisplayMetrics();
         int width = metrics.widthPixels;
         int height = metrics.heightPixels;
@@ -75,6 +82,10 @@ public class MainWorker {
     }
     public void downloadPaper(String city) throws Exception {
         String sUrl = getPaperUrl(city);
+        if (new File(parent.getApplicationContext().getFilesDir(), filename).exists()) {
+            Log.e("DEBUG", "Wallpapers cached: "+filename);
+            return;
+        }
         Log.e("URL",sUrl);
         InputStream input = null;
         FileOutputStream outputStream = null;
@@ -91,8 +102,12 @@ public class MainWorker {
             input = connection.getInputStream();
 
 
+                File dirs = new File (parent.getApplicationContext().getFilesDir(), dir);
+                dirs.mkdirs();
 
-                outputStream = parent.openFileOutput("paper.jpg", Context.MODE_PRIVATE);
+                File picture = new File(parent.getApplicationContext().getFilesDir(), filename);
+
+                outputStream = new FileOutputStream(picture);
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
                 byte[] buffer = new byte[1024];
                 while (true) {
@@ -107,6 +122,7 @@ public class MainWorker {
 
             } catch (Exception e) {
                 Log.e("Fatal", "connection error at line 110");
+                e.printStackTrace();
 
             } finally {
             try {

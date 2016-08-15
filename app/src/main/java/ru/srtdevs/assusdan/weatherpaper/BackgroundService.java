@@ -33,7 +33,7 @@ public class BackgroundService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        int tm = 60;
+        int tm = 600;
 
         try {
             Notification notif = new NotificationCompat.Builder(this)
