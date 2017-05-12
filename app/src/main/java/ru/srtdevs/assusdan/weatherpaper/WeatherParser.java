@@ -19,10 +19,9 @@ import org.json.JSONTokener;
  */
 public class WeatherParser {
 
-    String weatherToken = "4f2c112f04fbaa7a2cf44d481da7f20d";
+    String weatherToken = "YOUR_TOKEN";
 
     public String getFolder(String cityName) throws Exception {
-        cityName = "London";
         return parseWeather("http://api.openweathermap.org/data/2.5/weather?q=" + cityName.replace(" ", "%20") + "&appid=" + weatherToken + "&units=metric");
     }
 
